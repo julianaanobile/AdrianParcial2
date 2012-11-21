@@ -15,38 +15,37 @@ import javax.swing.*;
 
 
 public class ListaTransaccionesGUI extends JFrame implements ActionListener   {
- private Transacciones lista;
- private JLabel lbCodigoEst, lbApel1, lbApel2,lbNombre;
- private JTextField tfCodigoEst, tfApel1, tfApel2,  tfNombre; 
- private JPanel panelPrincipal, panelContenedor, panelInicio, panelAgregar, panelEliminar, panelCambiarDatos, panelOrdenar, panelMostrar;
+ private Transacciones listaTransaccion;
+ private Cuentas listaCuentas;
+ private JLabel lbCuenta, lbFecha1, lbTipoTransaccion,lbTipoCuenta, lbMonto, lbSaldo;
+ private JTextField tfCuenta, tfFecha, tfMonto; 
+ private JComboBox cbTipoTransaccion,  cbTipoCuenta;
+ private JPanel panelPrincipal, panelContenedor, panelInicio, panelAgregar, panelBuscarCuenta, panelMostrarCuentas ,panelMostrarTransacciones;
  private CardLayout cardLayout;  // manejador de paneles
- private JButton botonAgregar, botonEliminar, botonBuscar, botonOrdenarNombre,botonOrdenarCodigo;
- private JTextArea tAListaOrdenada;
- private JTextArea areaMostrar;
- private JTextField tfCodigo2;
- private JTextField tfCodigoEst2;
- private JTextField tfapellido1x;
- private JTextField tfapellido2x;
- private JTextField tfnombre2x;
- private JButton botonModificar;
- private NodoTransaccion NodoTransaccion;
-// private int codigo;
-// private String apellido1, apellido2, nombre;
-// 
+ private JButton botonAgregar, botonBuscar;
+ private JTextArea areaMostrarTransacciones;
+ private JTextArea areaMostrarCuentas;
+ private JTextField tfCuenta2;
+ private JTextField tfFechaApertura;
+ private JTextField tfNombreCliente;
+ private JTextField tfTipoCuentaCliente;
+ private JTextField tfSaldo;
+
  public ListaTransaccionesGUI() //COnstructor de la Clase
    {
    
-       super("Lista de Estudiantes");  // llama al constructor de JFrame, pone titulo a la ventana
+       super("Transacciones");  // llama al constructor de JFrame, pone titulo a la ventana
        
-       lista =new Transacciones(); // inicailizamos objteo LIstas
+       listaTransaccion =new Transacciones(); // inicailizamos objteo LIstas
+       listaCuentas = new Cuentas();
        panelPrincipal = new JPanel(); //inicializo panel principal y el manejador cardlayoud
        cardLayout = new CardLayout();
-       construyePanelInicio (); // llamo al metodo que construye el panel de inicio que solo pinta el fondo de blanco
+       AgregarCuentas();
        
+       construyePanelInicio (); // llamo al metodo que construye el panel de inicio que solo pinta el fondo de blanco
        construyePanelAgregar(); // construye el panel de agregar departament
-       construyePanelEliminar();
-       construyePanelCambiarDatos();
-       construyePanelOrdenar();
+       construyePanelBuscarCuenta();
+       construyePanelMostrarCuentas();
        construyePanelMostrar();
        
        construyePanelPrincipal(); // construye el panel que me maneja los paneles 
@@ -61,7 +60,7 @@ public class ListaTransaccionesGUI extends JFrame implements ActionListener   {
        //crear elementos del Menu
        
        //manejar elemento Agregar Departamento
-       JMenuItem elementoAgregar = new JMenuItem("Agregar Estudiante");
+       JMenuItem elementoAgregar = new JMenuItem("Agregar Transaccion");
        menuArchivo.add(elementoAgregar); //agrega elemento al Menu archivo
        elementoAgregar.addActionListener(
                new ActionListener() { //clase interna anónima
@@ -75,17 +74,8 @@ public class ListaTransaccionesGUI extends JFrame implements ActionListener   {
             }
         });
        
-       JMenuItem elementoEliminar = new JMenuItem("Eliminar Estudiante");
-       menuArchivo.add(elementoEliminar); //agrega elemento al Menu archivo
-       elementoEliminar.addActionListener(
-               new ActionListener() { //clase interna anónima
-
-                   public void actionPerformed(ActionEvent e) {
-                  cardLayout.show(panelPrincipal, "Panel 3"); // si hacen clic en Archivo, muestra panel 2, es decir, panelELiminar
-                   }
-               });
        
-        JMenuItem elementoBuscar = new JMenuItem("Actualizar Datos");
+        JMenuItem elementoBuscar = new JMenuItem("Buscar Cuenta");
        menuArchivo.add(elementoBuscar); //agrega elemento al Menu archivo
        elementoBuscar.addActionListener(
                new ActionListener() { //clase interna anónima
@@ -98,28 +88,30 @@ public class ListaTransaccionesGUI extends JFrame implements ActionListener   {
             }
         });
        
-       JMenuItem elementoOrdenar = new JMenuItem("Ordenar");
-       menuArchivo.add(elementoOrdenar); //agrega elemento al Menu archivo
-       elementoOrdenar.addActionListener(
+       JMenuItem elementoMostrarCuentas = new JMenuItem("Mostrar Cuentas");
+       menuArchivo.add(elementoMostrarCuentas); //agrega elemento al Menu archivo
+       elementoMostrarCuentas.addActionListener(
                new ActionListener() { //clase interna anónima
 
           
             public void actionPerformed(ActionEvent e) {
             cardLayout.show(panelPrincipal, "Panel 5");
+            String listado = listaCuentas.mostrarLista();
+            areaMostrarCuentas.setText(listado);
             }
         });
        
-       JMenuItem elementoMostrar = new JMenuItem("Mostrar Lista");
-       menuArchivo.add(elementoMostrar); //agrega elemento al Menu archivo
-       elementoMostrar.addActionListener(
+       JMenuItem elementoMostrarTransacciones = new JMenuItem("Mostrar Transacciones");
+       menuArchivo.add(elementoMostrarTransacciones); //agrega elemento al Menu archivo
+       elementoMostrarTransacciones.addActionListener(
                new ActionListener() { //clase interna anónima
 
           
             public void actionPerformed(ActionEvent e) {
              cardLayout.show(panelPrincipal, "Panel 6");
              
-            String listado = lista.mostrarLista();
-            areaMostrar.setText(listado);
+            String listado = listaTransaccion.mostrarLista();
+            areaMostrarTransacciones.setText(listado);
             }
         });
    
@@ -144,152 +136,130 @@ public class ListaTransaccionesGUI extends JFrame implements ActionListener   {
         panelPrincipal.setLayout(cardLayout);
         panelPrincipal.add(panelContenedor, "Panel 1");
         panelPrincipal.add(panelAgregar, "Panel 2");
-        panelPrincipal.add(panelEliminar,"Panel 3");
-        panelPrincipal.add(panelCambiarDatos, "Panel 4");
-        panelPrincipal.add(panelOrdenar, "Panel 5");
-        panelPrincipal.add(panelMostrar, "Panel 6");
+        panelPrincipal.add(panelBuscarCuenta, "Panel 4");
+        panelPrincipal.add(panelMostrarCuentas, "Panel 5");
+        panelPrincipal.add(panelMostrarTransacciones, "Panel 6");
 
     }
     
     private void construyePanelAgregar()
     {       
         panelAgregar = new JPanel(); // manejador grid 3 filas y dos columnas, acomoda los elemetos
-       JPanel  panelAux = new JPanel(new GridLayout(4,2));
+       JPanel  panelAux = new JPanel(new GridLayout(5,2));
         panelAgregar.setBackground(Color.WHITE);
         panelAux.setBackground(Color.WHITE);   
         //en orden que se agrega
         
         panelAgregar.setBorder(BorderFactory.createEmptyBorder( 40,50,50,50));  // pone borde
-        lbCodigoEst = new JLabel("Codigo Del Estudiante");
-        tfCodigoEst = new JTextField();
-        lbApel1 = new JLabel("Primer Apellido");       
-        tfApel1 = new JTextField();
-        lbApel2 = new JLabel("Segundo Apellido");       
-        tfApel2 = new JTextField();
-        lbNombre = new JLabel("Nombre Del Estudiante");
-        tfNombre = new JTextField();
+        lbCuenta = new JLabel("Numero de Cuenta");
+        tfCuenta = new JTextField("");
+        lbFecha1 = new JLabel("Fecha");       
+        tfFecha = new JTextField();
+        lbTipoTransaccion = new JLabel("Tipo de Transaccion");  
+        String [] transaccionesArray = {"Consignacion","Retiro"};
+        cbTipoTransaccion = new JComboBox(transaccionesArray);
+        lbTipoCuenta = new JLabel("Tipo de Cuenta");
+        String [] cuentasArray = {"ahorro","Corriente"};
+        cbTipoCuenta = new JComboBox(cuentasArray);
+        lbMonto = new JLabel("Monto");
+        tfMonto = new JTextField();
         
         
         botonAgregar  = new JButton("Agregar");
         botonAgregar.addActionListener(this); //agregar escucha al boton
         
-        panelAux.add(lbCodigoEst);
-        panelAux.add(tfCodigoEst);
+        panelAux.add(lbCuenta);
+        panelAux.add(tfCuenta);
         
-        panelAux.add(lbApel1);
-        panelAux.add(tfApel1);
+        panelAux.add(lbFecha1);
+        panelAux.add(tfFecha);
         
-        panelAux.add(lbApel2);
-        panelAux.add(tfApel2);
+        panelAux.add(lbTipoTransaccion);
+        panelAux.add(cbTipoTransaccion);
         
-        panelAux.add(lbNombre);
-        panelAux.add(tfNombre);
+        panelAux.add(lbTipoCuenta);
+        panelAux.add(cbTipoCuenta);
+        
+        panelAux.add(lbMonto);
+        panelAux.add(tfMonto);
         
         panelAgregar.add(panelAux);
         panelAgregar.add(botonAgregar);
               
     }
     
-     private void construyePanelEliminar ()
-     {
-         panelEliminar = new JPanel(new GridLayout(2,1));
-         panelEliminar.setBackground(Color.WHITE);        
-         panelEliminar.setBorder(BorderFactory.createEmptyBorder( 60,50,80,50));  // pone borde
-         lbCodigoEst = new JLabel("Codigo del Estudiante");
-         tfCodigoEst2 = new JTextField();
-         
-         botonEliminar = new JButton("Eliminar");
-         botonEliminar.addActionListener(this); //agregar escucha al boton
-         panelEliminar.add(lbCodigoEst);    
-         panelEliminar.add(tfCodigoEst2);      
-         panelEliminar.add(botonEliminar);
-                  
-     }
-     
-     
-     private void construyePanelCambiarDatos()
+     private void construyePanelBuscarCuenta()
    {
          
-       panelCambiarDatos = new JPanel(new BorderLayout());
+       panelBuscarCuenta = new JPanel(new BorderLayout());
        JPanel panelAux = new JPanel(new GridLayout(2,2));
-       JPanel panelAux2= new JPanel (new GridLayout(3,2));
-       panelCambiarDatos.setBackground(Color.WHITE);
+       JPanel panelAux2= new JPanel (new GridLayout(4,2));
+       panelBuscarCuenta.setBackground(Color.WHITE);
 //       panelCambiarDatos.setBorder(BorderFactory.createEmptyBorder(60, 50, 80, 50));  // pone borde
-       lbCodigoEst = new JLabel("Codigo del Estudiante");
-       lbApel1  = new JLabel("Apellido 1");
-       lbApel2  = new JLabel("Apellido 2");
-       lbNombre  = new JLabel("Nombre");
+       lbCuenta = new JLabel("Numero de Cuenta");
+       lbFecha1  = new JLabel("Fecha Apertura");
+       lbTipoTransaccion  = new JLabel("Nombre Cliente");
+       lbTipoCuenta  = new JLabel("Tipo de Cuenta");
+       lbSaldo  = new JLabel("Saldo");
       
-       tfCodigo2 = new JTextField();
-       botonBuscar = new JButton("Buscar Estudiante");
+       tfCuenta2 = new JTextField();
+       botonBuscar = new JButton("Buscar Cuenta");
        botonBuscar.addActionListener(this); //agregar escucha al boton
        
-       botonModificar = new JButton("Actualizar Datos");
-       botonModificar.addActionListener(this);
-       botonModificar.setEnabled(false);
                          
        // campos a modificar 
        
-       tfapellido1x = new JTextField();
-       tfapellido2x = new JTextField();
-       tfnombre2x = new JTextField();
+       tfFechaApertura = new JTextField();
+       tfNombreCliente = new JTextField();
+       tfTipoCuentaCliente = new JTextField();
+       tfSaldo = new JTextField();
               
        // agregar al panel
-       panelAux.add(lbCodigoEst);
-       panelAux.add(tfCodigo2);
+       panelAux.add(lbCuenta);
+       panelAux.add(tfCuenta2);
        panelAux.add(botonBuscar);
        
-       panelAux2.add(lbApel1);
-       panelAux2.add(tfapellido1x);
+       panelAux2.add(lbFecha1);
+       panelAux2.add(tfFechaApertura);
        
-       panelAux2.add(lbApel2);
-       panelAux2.add(tfapellido2x);
+       panelAux2.add(lbTipoTransaccion);
+       panelAux2.add(tfNombreCliente);
        
-       panelAux2.add(lbNombre);
-       panelAux2.add(tfnombre2x);
+       panelAux2.add(lbTipoCuenta);
+       panelAux2.add(tfTipoCuentaCliente);
        
-       panelCambiarDatos.add(panelAux, BorderLayout.NORTH);
-       panelCambiarDatos.add(panelAux2, BorderLayout.CENTER);
-       panelCambiarDatos.add(botonModificar, BorderLayout.SOUTH);
+       panelAux2.add(lbSaldo);
+       panelAux2.add(tfSaldo);
+       
+       panelBuscarCuenta.add(panelAux, BorderLayout.NORTH);
+       panelBuscarCuenta.add(panelAux2, BorderLayout.CENTER);
                  
    }
 
-    private void construyePanelOrdenar() 
-    // ordena la lista de departamentos, de acuerdo al código o nombre según el usuario haya determinado.
+    private void construyePanelMostrarCuentas() 
     {
-        panelOrdenar = new JPanel();
-        JPanel aux = new JPanel(new GridLayout(2, 1));
-        //   panelOrdenar.setBorder(BorderFactory.createEmptyBorder(60, 50, 50, 50));  // pone borde
-        botonOrdenarNombre = new JButton("Ordenar por Apellido");
-        botonOrdenarCodigo = new JButton("Ordenar por Codigo");
+        panelMostrarCuentas = new JPanel();
+        areaMostrarCuentas = new JTextArea(8,40);
+        panelMostrarCuentas.add(areaMostrarCuentas);
 
-        botonOrdenarNombre.addActionListener(this); //agregar escucha al boton
-        botonOrdenarCodigo.addActionListener(this); //agregar escucha al boton
-        tAListaOrdenada = new JTextArea(6, 40);
-
-        aux.add(botonOrdenarNombre);
-        aux.add(botonOrdenarCodigo);
-        panelOrdenar.add(aux);
-        panelOrdenar.add(tAListaOrdenada);
-                   
-          }
+    }
 
     private void construyePanelMostrar() 
     {
     
-        panelMostrar = new JPanel();
-        areaMostrar = new JTextArea(8,40);
-        
-        panelMostrar.add(areaMostrar);
+        panelMostrarTransacciones = new JPanel();
+        areaMostrarTransacciones = new JTextArea(8,40);
+        panelMostrarTransacciones.add(areaMostrarTransacciones);
 
     }
     
     public void limpiarCampos()
     { //Limpia los jtexfFields
-        tfCodigoEst.setText("");
-        tfNombre.setText("");
-        tfApel1.setText("");
-        tfApel2.setText("");      
+        tfCuenta.setText("");
+        cbTipoCuenta.setSelectedIndex(0);
+        tfFecha.setText("");
+        cbTipoTransaccion.setSelectedIndex(0);
+        tfMonto.setText("");
         
         
     }
@@ -307,82 +277,84 @@ public class ListaTransaccionesGUI extends JFrame implements ActionListener   {
         if (e.getSource()== botonAgregar)
         {   
             
-           
-                   
-            
             try{ //para capturar la excpecion,..encierra el código donde puede ocurrir una excepcion
-            if (!tfCodigoEst.getText().equals("")|| !tfNombre.getText().equals("") ||  //valida que los campos no esten vacios
-                  !tfApel1.getText().equals("")|| !tfApel2.equals("") ){
-                int codigo = Integer.parseInt(tfCodigoEst.getText());
-                String apellido1 = tfApel1.getText();
-                String apellido2 = tfApel2.getText();
-                String nombre = tfNombre.getText();
-                lista.insertarFinal(codigo, nombre, apellido1, apellido2);
-                JOptionPane.showMessageDialog(null, "Estudiante agregado a la LIsta");
+            if (!tfCuenta.getText().equals("")||  //valida que los campos no esten vacios
+                  !tfFecha.getText().equals("")||  //valida que los campos no esten vacios
+                  !tfMonto.getText().equals("")  ){
+                int cuenta = Integer.parseInt(tfCuenta.getText());
+                
+                String fecha = tfFecha.getText();
+                String tipotransaccion = (String) cbTipoTransaccion.getSelectedItem();
+                String tipoCuenta = (String) cbTipoCuenta.getSelectedItem();
+                int monto = Integer.parseInt(tfMonto.getText());
+                
+                NodoCuentas nodoCuenta = listaCuentas.buscarNodo(cuenta);          
+                
+                if(nodoCuenta== null&&tipotransaccion.equals("Retiro")){
+                    JOptionPane.showMessageDialog(null, "No existe la cuenta, entonces no es posible hacer el retiro");
+                    return;
+                }
+                
+                if(nodoCuenta!= null && tipotransaccion.equals("Retiro")){
+                    if(nodoCuenta.saldo<monto){
+                        JOptionPane.showMessageDialog(null, "No tiene suficiente saldo para hacer la transaccion");
+                        return;
+                    }
+                }
+                
+                if(nodoCuenta == null){
+                    String nombreCliente = JOptionPane.showInputDialog("Ingrese el nombre del nuevo cliente");
+                    nodoCuenta = listaCuentas.insertarFinal(cuenta, fecha, nombreCliente, tipoCuenta, 0);
+                }
+                
+                listaTransaccion.insertarFinal(cuenta, fecha, tipotransaccion, tipoCuenta, monto);
+                
+                if(tipotransaccion.equals("Retiro")){
+                    nodoCuenta.saldo = nodoCuenta.saldo - monto;
+                } else {
+                    nodoCuenta.saldo = nodoCuenta.saldo + monto;
+                }
+                
+                listaCuentas.eliminarPosicion(listaCuentas.obtenerPosXcod(nodoCuenta.NoCuenta));
+                listaCuentas.insertarFinal(nodoCuenta.NoCuenta, nodoCuenta.fecha_apertura, nodoCuenta.Nombre_Cliente, nodoCuenta.tipo_de_cuenta, nodoCuenta.saldo);
+                
+                JOptionPane.showMessageDialog(null, "Transaccion ejecutada");
                 limpiarCampos();
             }
             }catch(NumberFormatException nfe)  //excepción que captura si el codigo no es numero NumberFormatException
             {
-               JOptionPane.showMessageDialog(null, "Codigo estudiante debe ser un numero");
+               JOptionPane.showMessageDialog(null, "El numero de cuenta y el monto debe ser numerico");
             }
                                 
         }
         
        if (e.getSource() == botonBuscar){
-           int codigo = Integer.parseInt(tfCodigo2.getText());
-       // buscar estudiante por codigo a traves del jtextfield
+           int codigo = Integer.parseInt(tfCuenta2.getText());
+       // buscar cuenta por numero de cuenta a traves del jtextfield
        
-           NodoTransaccion = lista.buscarNodo(codigo);          
+           NodoCuentas nodoCuenta = listaCuentas.buscarNodo(codigo);          
                         
-           if(NodoTransaccion == null){
-               JOptionPane.showMessageDialog(null, "No existe el Estudiante "+codigo);
-               botonModificar.setEnabled(false);
-               tfapellido1x.setText(""); // Limpia los campos por si hay algo
-               tfapellido2x.setText("");
-               tfnombre2x.setText("");    
+           if(nodoCuenta == null){
+               JOptionPane.showMessageDialog(null, "No existe la cuenta "+codigo);
+               tfFechaApertura.setText(""); // Limpia los campos por si hay algo
+               tfNombreCliente.setText("");
+               tfTipoCuentaCliente.setText("");
+               tfSaldo.setText("");
            } else {
-               botonModificar.setEnabled(true); // habilita el boton de actualizar
-               tfapellido1x.setText(NodoTransaccion.dato3); // setear los campos
-               tfapellido2x.setText(NodoTransaccion.dato4);
-               tfnombre2x.setText(NodoTransaccion.dato2);
+               tfFechaApertura.setText(nodoCuenta.fecha_apertura); // setear los campos
+               tfNombreCliente.setText(nodoCuenta.Nombre_Cliente);
+               tfTipoCuentaCliente.setText(nodoCuenta.tipo_de_cuenta);
+               tfSaldo.setText(String.valueOf(nodoCuenta.saldo));
            }
        }
-       
-       if (e.getSource() == botonModificar){
-           
-           int codigo = NodoTransaccion.dato;
-           lista.eliminarPosicion(lista.obtenerPosXcod(codigo));
-           lista.insertarFinal(codigo, tfnombre2x.getText(), tfapellido1x.getText(), tfapellido2x.getText());
-           JOptionPane.showMessageDialog(null, "Datos Actualizados correctamente");
-           botonBuscar.setEnabled(true);
-           botonModificar.setEnabled(false);
-           tfCodigo2.setText("");
-           tfapellido1x.setText(""); // Limpia los campos por si hay algo
-           tfapellido2x.setText("");
-           tfnombre2x.setText("");    
-           
-           
-       }
-       
-       if (e.getSource() == botonEliminar){
-           int codigoDep = Integer.parseInt(tfCodigoEst2.getText());
-           if(lista.buscarNodo(codigoDep)==null){
-               JOptionPane.showMessageDialog(null, "El Estudiante con codigo "+codigoDep+" no existe");
-           }else {
-                lista.eliminarPosicion(lista.obtenerPosXcod(Integer.parseInt(tfCodigoEst2.getText())));    
-                    JOptionPane.showMessageDialog(null, "Eliminado");    // mensaje de confirmacion
-           }
-       }
-       
-       if (e.getSource() == botonOrdenarCodigo){
-           lista.ordenarXCodigo();
-           tAListaOrdenada.setText(lista.mostrarLista());
-       }
+    }
 
-        if (e.getSource() == botonOrdenarNombre){
-            lista.ordenarXApellido();
-           tAListaOrdenada.setText(lista.mostrarLista());
-       }
+    private void AgregarCuentas() {
+        listaCuentas.insertarPrimero(111111, "15/05/2005", "Juanito Perencejo", "Ahorros", 52000);
+        listaCuentas.insertarPrimero(222222, "20/01/2009", "Pedro Perez", "Ahorros", 85000);
+        listaCuentas.insertarPrimero(333333, "18/11/2007", "Maria Gonzales", "Ahorros", 770000);
+        listaCuentas.insertarPrimero(555555, "03/08/2010", "Ana Agudelo", "Ahorros", 43000);
+        listaCuentas.insertarPrimero(666666, "03/08/2010", "Jessica Lozano", "Ahorros", 521000);
     }
     
 }

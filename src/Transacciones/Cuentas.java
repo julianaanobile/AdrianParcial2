@@ -30,7 +30,7 @@ public class Cuentas {
 
     /*  4.	Ahora creamos una parte llamada insertar ultimo, para ello hay * que hacer 
      * forma de recorrer la lista o tener un apuntador que defina el ultimo nodo. */
-    public void insertarFinal(int NoCuenta, String fecha, String Nombre_Cliente, String tipo_de_cuenta, int saldo) {
+    public NodoCuentas insertarFinal(int NoCuenta, String fecha, String Nombre_Cliente, String tipo_de_cuenta, int saldo) {
         NodoCuentas aux = cabeza;  /*
          * Creamos una variable de tipo nodo
          */
@@ -64,7 +64,8 @@ public class Cuentas {
              * auxiliar seria el nuevo objeto
              */
         }
-
+        
+        return nuevo;
     }
 
     /* 4.1	Creamos método que imprima lo que insertamos en la lista  */
