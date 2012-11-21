@@ -280,7 +280,7 @@ public class ListaTransaccionesGUI extends JFrame implements ActionListener   {
             try{ //para capturar la excpecion,..encierra el código donde puede ocurrir una excepcion
             if (!tfCuenta.getText().equals("")||  //valida que los campos no esten vacios
                   !tfFecha.getText().equals("")||  //valida que los campos no esten vacios
-                  !tfMonto.getText().equals("")  ){
+                  !tfMonto.getText().equals(" ")  ){
                 int cuenta = Integer.parseInt(tfCuenta.getText());
                 
                 String fecha = tfFecha.getText();
